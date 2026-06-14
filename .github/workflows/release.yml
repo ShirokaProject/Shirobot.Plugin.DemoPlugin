@@ -17,7 +17,6 @@ permissions:
 env:
   PROJECT_DIR: .
   PUBLISH_DIR: bin/Release/net10.0/publish
-  PLUGIN_DLL: ShiroBot.DemoPlugin.dll
 
 jobs:
   publish:
@@ -35,9 +34,22 @@ jobs:
       - name: Publish
         run: dotnet publish "$PROJECT_DIR" --configuration Release
 
+      - name: Collect Plugin DLL
+        shell: bash
+        run: |
+          PROJECT="$(basename "$(ls *.csproj | head -1)" .csproj)"
+          PLUGIN_DLL="$PUBLISH_DIR/${PROJECT}.dll"
+          if [ ! -f "$PLUGIN_DLL" ]; then
+            echo "Plugin DLL not found: $PLUGIN_DLL"
+            ls -la "$PUBLISH_DIR"
+            exit 1
+          fi
+          mkdir -p release
+          cp "$PLUGIN_DLL" release/
+
       - name: Upload DLL to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
           target_commitish: ${{ github.sha }}
-          files: ${{ env.PUBLISH_DIR }}/${{ env.PLUGIN_DLL }}
+          files: release/*.dll
