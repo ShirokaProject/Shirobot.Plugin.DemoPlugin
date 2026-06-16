@@ -3,13 +3,15 @@ using ShiroBot.SDK.Abstractions;
 using ShiroBot.SDK.Core;
 using ShiroBot.SDK.Plugin;
 
-namespace ShiroBot.DemoPlugin;
+namespace ShiroBot.Plugin.DemoPlugin;
 
 [BotPlugin(id: "DemoPlugin",
     Name = "标准示例插件",
-    Version = "1.0.0",
+    Version = "0.5.0",
+    Author = "ShirokaProject",
+    Category = PluginCategory.Other,
     Description = "这是一个包含各种功能示例的标准插件，展示了如何使用 ShiroBot SDK 开发插件。",
-    GithubRepo = "ShirokaProject/ShiroBot.DemoPlugin",
+    GithubRepo = "ShirokaProject/Shirobot.Plugin.DemoPlugin",
     IsPluginSingleFile = false)
 ]
 public sealed class DemoPlugin : PluginBase

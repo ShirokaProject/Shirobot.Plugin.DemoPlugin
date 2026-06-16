@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ShiroBot.SDK" Version="0.3.0" />
+        <PackageReference Include="ShiroBot.SDK" Version="0.5.0"/>
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.44.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,12 +20,20 @@
     <Target Name="RepackPlugin" AfterTargets="Publish" Condition="'$(Configuration)'=='Release'">
         <PropertyGroup>
             <MergedPluginFile>$(PublishDir)$(AssemblyName).merged.dll</MergedPluginFile>
+            <MergedPluginPdb>$(PublishDir)$(AssemblyName).merged.pdb</MergedPluginPdb>
+            <PublishedPluginFile>$(PublishDir)$(AssemblyName).dll</PublishedPluginFile>
+            <PublishedPluginPdb>$(PublishDir)$(AssemblyName).pdb</PublishedPluginPdb>
         </PropertyGroup>
 
+        <Delete Files="$(MergedPluginFile);$(MergedPluginPdb)" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(PublishedPluginFile)" OverwriteReadOnlyFiles="true" />
+        <Copy SourceFiles="$(TargetDir)$(AssemblyName).pdb" DestinationFiles="$(PublishedPluginPdb)" OverwriteReadOnlyFiles="true" Condition="Exists('$(TargetDir)$(AssemblyName).pdb')" />
+
         <ItemGroup>
-            <RepackInput Include="$(PublishDir)$(AssemblyName).dll" />
+            <RepackInput Include="$(PublishedPluginFile)" />
             <RepackDependency Include="$(PublishDir)*.dll"
-                              Exclude="$(PublishDir)$(AssemblyName).dll;
+                              Exclude="$(PublishedPluginFile);
+                                       $(MergedPluginFile);
                                        $(PublishDir)ShiroBot.SDK.dll;
                                        $(PublishDir)ShiroBot.Model.dll;
                                        $(PublishDir)Microsoft*.dll;
@@ -39,13 +47,15 @@
                 TargetKind="Dll"
                 OutputFile="$(MergedPluginFile)"
                 InputAssemblies="@(RepackInput)"
-                LibraryPath="$(PublishDir)"
-                Internalize="true"
+                LibraryPath="$(PublishDir);$(TargetDir);@(ReferencePath->'%(RootDir)%(Directory)')"
+                Internalize="false"
                 Parallel="true"
-                DebugInfo="true" />
+                DebugInfo="false" />
 
         <Copy SourceFiles="$(MergedPluginFile)" DestinationFiles="$(PublishDir)$(AssemblyName).dll" OverwriteReadOnlyFiles="true" />
+        <Copy SourceFiles="$(MergedPluginPdb)" DestinationFiles="$(PublishedPluginPdb)" OverwriteReadOnlyFiles="true" Condition="Exists('$(MergedPluginPdb)')" />
         <Delete Files="$(MergedPluginFile)" />
+        <Delete Files="$(MergedPluginPdb)" />
         <Delete Files="@(RepackDependency)" />
     </Target>
 
